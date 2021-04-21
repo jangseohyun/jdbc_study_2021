@@ -84,12 +84,20 @@ public class Process
 
 			// dao의 count() 메소드 호출 → 인원 수 확인
 			System.out.printf("\n전체 인원: %d\n", dao.count());
-			System.out.println("번호   이름    국어  영어  수학   총점  평균  석차");
-
-			for (ScoreDTO dto : dao.list())
+			
+			if (dao.count() > 0)
 			{
-				System.out.printf("%3s %5s %5d %5d %5d %6d %6.1f %4d\n", dto.getSid(), dto.getName(), dto.getKor(),
-						dto.getEng(), dto.getMat(), dto.getTot(), dto.getAvg(), dto.getRank());
+				System.out.println("번호   이름    국어  영어  수학   총점  평균  석차");
+	
+				for (ScoreDTO dto : dao.list())
+				{
+					System.out.printf("%3s %5s %5d %5d %5d %6d %6.1f %4d\n", dto.getSid(), dto.getName(), dto.getKor(),
+							dto.getEng(), dto.getMat(), dto.getTot(), dto.getAvg(), dto.getRank());
+				}
+			}
+			else if (dao.count() == 0)
+			{
+				System.out.println(">> 조회할 성적이 없습니다.");
 			}
 			
 			System.out.println();
@@ -119,13 +127,22 @@ public class Process
 			System.out.print("\n검색할 이름을 입력하세요: ");
 			String name = sc.next();
 
-			System.out.printf("\n>> %s 학생의 성적 조회 결과\n",name);
-			System.out.println("번호   이름    국어  영어  수학   총점  평균  석차");
+			int result = dao.count();
 			
-			for (ScoreDTO dto : dao.list(name))
+			if (result > 0)
 			{
-				System.out.printf("%3s %5s %5d %5d %5d %6d %6.1f %4d\n", dto.getSid(), dto.getName(), dto.getKor(),
-						dto.getEng(), dto.getMat(), dto.getTot(), dto.getAvg(), dto.getRank());
+				System.out.printf("\n>> %s 학생의 성적 조회 결과\n",name);
+				System.out.println("번호   이름    국어  영어  수학   총점  평균  석차");
+				
+				for (ScoreDTO dto : dao.list(name))
+				{
+					System.out.printf("%3s %5s %5d %5d %5d %6d %6.1f %4d\n", dto.getSid(), dto.getName(), dto.getKor(),
+							dto.getEng(), dto.getMat(), dto.getTot(), dto.getAvg(), dto.getRank());
+				}
+			}
+			else if (result == 0)
+			{
+				System.out.println(">> 존재하지 않는 이름입니다.");
 			}
 			
 			System.out.println();
@@ -149,36 +166,43 @@ public class Process
 			
 			System.out.print("\n변경할 성적 번호를 입력하세요: ");
 			int sid = sc.nextInt();
-
-			System.out.printf("\n>> %d번의 성적 조회 결과\n",sid);
-			System.out.println("번호   이름    국어  영어  수학   총점  평균  석차");
 			
-			for (ScoreDTO dto : dao.list(sid))
-			{
-				System.out.printf("%3s %5s %5d %5d %5d %6d %6.1f %4d\n", dto.getSid(), dto.getName(), dto.getKor(),
-						dto.getEng(), dto.getMat(), dto.getTot(), dto.getAvg(), dto.getRank());
-			}
-			
-			System.out.print("\n변경사항을 입력하세요(이름 국어 영어 수학): ");
-			
-			String name = sc.next();
-			int kor = sc.nextInt();
-			int eng = sc.nextInt();
-			int mat = sc.nextInt();
-			
-			ScoreDTO dto = new ScoreDTO();
-			
-			dto.setSid(Integer.toString(sid));
-			dto.setName(name);
-			dto.setKor(kor);
-			dto.setEng(eng);
-			dto.setMat(mat);
-			
-			int result = 0;
-			result = dao.modify(dto);
+			int result = dao.count();
 			
 			if (result > 0)
+			{
+				System.out.printf("\n>> %d번 성적 조회 결과\n",sid);
+				System.out.println("번호   이름    국어  영어  수학   총점  평균  석차");
+				
+				for (ScoreDTO dto : dao.list(sid))
+				{
+					System.out.printf("%3s %5s %5d %5d %5d %6d %6.1f %4d\n", dto.getSid(), dto.getName(), dto.getKor(),
+							dto.getEng(), dto.getMat(), dto.getTot(), dto.getAvg(), dto.getRank());
+				}
+			
+				System.out.print("\n변경사항을 입력하세요(이름 국어 영어 수학): ");
+				
+				String name = sc.next();
+				int kor = sc.nextInt();
+				int eng = sc.nextInt();
+				int mat = sc.nextInt();
+				
+				ScoreDTO dto = new ScoreDTO();
+				
+				dto.setSid(Integer.toString(sid));
+				dto.setName(name);
+				dto.setKor(kor);
+				dto.setEng(eng);
+				dto.setMat(mat);
+				
+				result = dao.modify(dto);
+				
 				System.out.println(">> 변경사항이 적용되었습니다.\n");
+			}
+			else if (result == 0)
+			{
+				System.out.println(">> 존재하지 않는 번호입니다.\n");
+			}
 			
 			dao.close();
 			
@@ -201,27 +225,36 @@ public class Process
 			System.out.print("\n삭제할 성적 번호를 입력하세요: ");
 			int sid = sc.nextInt();
 			
-			System.out.printf("\n>> %d번의 성적 조회 결과\n",sid);
-			System.out.println("번호   이름    국어  영어  수학   총점  평균  석차");
+			int count = dao.count();
 			
-			for (ScoreDTO dto : dao.list(sid))
+			if (count > 0)
 			{
-				System.out.printf("%3s %5s %5d %5d %5d %6d %6.1f %4d\n", dto.getSid(), dto.getName(), dto.getKor(),
-						dto.getEng(), dto.getMat(), dto.getTot(), dto.getAvg(), dto.getRank());
+				System.out.printf("\n>> %d번의 성적 조회 결과\n",sid);
+				System.out.println("번호   이름    국어  영어  수학   총점  평균  석차");
+				
+				for (ScoreDTO dto : dao.list(sid))
+				{
+					System.out.printf("%3s %5s %5d %5d %5d %6d %6.1f %4d\n", dto.getSid(), dto.getName(), dto.getKor(),
+							dto.getEng(), dto.getMat(), dto.getTot(), dto.getAvg(), dto.getRank());
+				}
+				
+				System.out.print("\n삭제하시겠습니까?(1: 예, 2: 아니오): ");
+				int remove = sc.nextInt();
+				
+				int result = 0;
+				
+				if (remove == 1)
+					result = dao.remove(sid);
+				
+				if (result > 0)
+					System.out.println(">> 삭제되었습니다.\n");
+				else if (result == 0)
+					System.out.println(">> 취소하셨습니다.\n");
 			}
-			
-			System.out.print("\n삭제하시겠습니까?(1: 예, 2: 아니오): ");
-			int remove = sc.nextInt();
-			
-			int result = 0;
-			
-			if (remove == 1)
-				result = dao.remove(sid);
-			
-			if (result > 0)
-				System.out.println(">> 삭제되었습니다.\n");
-			else if (result == 0)
-				System.out.println(">> 취소하셨습니다.\n");
+			else if (count == 0)
+			{
+				System.out.println(">> 존재하지 않는 번호입니다.\n");
+			}
 			
 			dao.close();
 			
