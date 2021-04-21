@@ -93,7 +93,7 @@ public class MemberDAO
 		// ResultSet 처리 → 반복문 구성 → 결과값 수신
 		while (rs.next())	//--if (rs.next())
 		{
-			result = rs.getInt("COUNT");	//--rs.getInt(1)
+			result = rs.getInt("COUNT(*)");	//--rs.getInt(1)
 		}
 		
 		// 리소스 반납
