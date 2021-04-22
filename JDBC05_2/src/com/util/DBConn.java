@@ -2,6 +2,7 @@
    DBConn.java
    - try ~ catch 로 예외 처리   
 ===============================*/
+// JDBC05_2
 
 
 package com.util;
@@ -16,9 +17,9 @@ public class DBConn
 	
 	public static Connection getConnection()
 	{
-		if (dbConn == null)
+		try
 		{
-			try
+			if (dbConn == null)
 			{
 				String url = "jdbc:oracle:thin:@211.238.142.170:1521:xe";
 				
@@ -28,12 +29,13 @@ public class DBConn
 				Class.forName("oracle.jdbc.driver.OracleDriver");
 				
 				dbConn = DriverManager.getConnection(url,user,pwd);
-				
-			} catch (Exception e)
-			{
-				System.out.println(e.toString());
 			}
+			
+		} catch (Exception e)
+		{
+			System.out.println(e.toString());
 		}
+		
 		return dbConn;
 	}
 	
@@ -63,7 +65,7 @@ public class DBConn
 			try
 			{
 				if (!dbConn.isClosed())
-					dbConn.close();
+				dbConn.close();
 				
 			} catch (Exception e)
 			{
