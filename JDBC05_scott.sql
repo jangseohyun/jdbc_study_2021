@@ -209,7 +209,7 @@ CREATE SEQUENCE EMPSEQ
 START WITH 1001
 NOCACHE;
 --==>> Sequence EMPSEQ이(가) 생성되었습니다.
-
+DROP TABLE TBL_EMP;
 
 --○ 세션 설정 변경
 ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD';
@@ -360,6 +360,15 @@ COMMIT;
 --==>> 커밋 완료.
 
 
+--○ 날짜 세션 확인
+SELECT * FROM NLS_SESSION_PARAMETERS WHERE PARAMETER LIKE '%DATE%' OR PARAMETER LIKE '%LANG%'; 
+/*
+NLS_LANGUAGE	    KOREAN
+NLS_DATE_FORMAT	    YYYY-MM-DD
+NLS_DATE_LANGUAGE	KOREAN
+*/
+
+
 --------------------------------------------------------------------------------
 
 
@@ -401,7 +410,8 @@ INSERT INTO TBL_EMP(EMP_ID,EMP_NAME,SSN,IBSADATE,CITY_ID,TEL,BUSEO_ID,JIKWI_ID,B
 
 --확인
 SELECT *
-FROM TBL_EMP;
+FROM TBL_EMP
+ORDER BY 1;
 
 --커밋
 COMMIT;
@@ -411,7 +421,8 @@ COMMIT;
 SELECT COUNT(*) AS COUNT FROM TBL_EMP
 ;
 
---※ 뷰 생성
+--※ 검색 직원 수 출력 과정에서
+--   뷰 생성
 CREATE OR REPLACE VIEW EMPVIEW
 AS
 SELECT E.EMP_ID, E.EMP_NAME, E.SSN, E.IBSADATE
@@ -425,21 +436,53 @@ WHERE E.CITY_ID = C.CITY_ID
 --==>> View EMPVIEW이(가) 생성되었습니다.
 
 --7. 검색 직원 수 출력 쿼리문 (사번/이름/부서/직위)
-SELECT COUNT(*) FROM EMPVIEW WHERE EMP_ID = 1061
+SELECT COUNT(*) AS COUNT FROM EMPVIEW WHERE EMP_ID = 1061
 ;
-SELECT COUNT(*) FROM EMPVIEW WHERE EMP_NAME = '선혜연'
+SELECT COUNT(*) AS COUNT FROM EMPVIEW WHERE EMP_NAME = '선혜연'
 ;
-SELECT COUNT(*) FROM EMPVIEW WHERE BUSEO_NAME = '개발부'
+SELECT COUNT(*) AS COUNT FROM EMPVIEW WHERE BUSEO_NAME = '개발부'
 ;
-SELECT COUNT(*) FROM EMPVIEW WHERE JIKWI_NAME = '사원'
+SELECT COUNT(*) AS COUNT FROM EMPVIEW WHERE JIKWI_NAME = '사원'
 ;
 
 --8. 직원 데이터 수정 쿼리문
 UPDATE TBL_EMP
 SET EMP_NAME = '김서현', SSN = '941227-2234567', IBSADATE = TO_DATE('2020-12-20','YYYY-MM-DD')
-  , CITY_LOC = (SELECT CITY_ID FROM TBL_CITY WHERE CITY_LOC = '제주')
+  , CITY_ID = (SELECT CITY_ID FROM TBL_CITY WHERE CITY_LOC = '제주')
   , TEL = '010-2222-2222'
   , BUSEO_ID = (SELECT BUSEO_ID FROM TBL_BUSEO WHERE BUSEO_NAME = '총무부')
-  , JIKWI_ID = (SELECT JIKWI_ID FROM TBL_BUSEO WHERE JIKWI_NAME = '대리')
+  , JIKWI_ID = (SELECT JIKWI_ID FROM TBL_JIKWI WHERE JIKWI_NAME = '대리')
   , BASICPAY = 2000000, SUDANG = 2000000
 WHERE EMP_ID = 1061;
+
+
+--9. 직원 데이터 전체 조회 쿼리문(사번/이름/부서/직위/급여내림차순)
+SELECT EMP_ID, EMP_NAME, SSN, TO_CHAR(IBSADATE,'YYYY-MM-DD') AS IBSADATE, CITY_LOC, TEL, BUSEO_NAME, JIKWI_NAME, MIN_BASICPAY, BASICPAY, SUDANG, PAY FROM EMPVIEW ORDER BY 1
+;
+
+--10. 데이터 삭제
+DELETE FROM TBL_EMP WHERE EMP_ID = 1062
+;
+
+String sql = String.format("UPDATE TBL_EMP
+        SET EMP_NAME = '%s', SSN = '%s',
+        IBSADATE = TO_DATE('%s','YYYY-MM-DD'),
+        CITY_ID = (SELECT CITY_ID FROM TBL_CITY WHERE CITY_LOC = '%s'),
+        TEL = '%s',
+        BUSEO_ID = (SELECT BUSEO_ID FROM TBL_BUSEO WHERE BUSEO_NAME = '%s'), JIKWI_ID = (SELECT JIKWI_ID FROM TBL_JIKWI WHERE JIKWI_NAME = '%s', BASICPAY = %d, SUDANG = %d WHERE EMP_ID = %d"
+				 , dto.getEmpName(), dto.getSsn(), dto.getIbsaDate(), dto.getCityLoc(), dto.getTel(), dto.getBuseoName(), dto.getJikwiName(), dto.getBasicPay(), dto.getSudang(), dto.getEmpId());
+
+String sql = String.format("UPDATE TBL_EMP"
+            + " SET EMP_NAME = '%s', SSN = '%s'"
+            + ", IBSADATE = TO_DATE('%s', 'YYYY-MM-DD')"
+            + ", CITY_ID = (SELECT CITY_ID FROM TBL_CITY WHERE CITY_LOC='%s')"
+            + ", TEL = '%s'"
+            + ", BUSEO_ID = (SELECT BUSEO_ID FROM TBL_BUSEO WHERE BUSEO_NAME = '%s')"
+            + ", JIKWI_ID = (SELECT JIKWI_ID FROM TBL_JIKWI WHERE JIKWI_NAME = '%s')"
+            + ", BASICPAY = %d, SUDANG = %d"
+            + " WHERE EMP_ID = %d"
+            , dto.getEmpName(), dto.getSsn(), dto.getIbsaDate(), dto.getCityLoc()
+            , dto.getTel(), dto.getBuseoName(), dto.getJikwiName()
+            , dto.getBasicPay(),  dto.getSudang(), dto.getEmpId());
+      
+		

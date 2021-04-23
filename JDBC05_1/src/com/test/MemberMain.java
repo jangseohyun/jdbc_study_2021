@@ -105,12 +105,12 @@
 package com.test;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Scanner;
 
 public class MemberMain
 {
-
-	public static void main(String[] args) throws SQLException
+	public static void main(String[] args) throws SQLException, ParseException
 	{
 		Scanner sc = new Scanner(System.in);
 		Process prc = new Process();
@@ -145,7 +145,20 @@ public class MemberMain
 				case 2:
 					prc.memberOrder();
 					break;
+				case 3:
+					prc.memberSearch();
+					break;
+				case 4:
+					prc.memberUpdate();
+					break;
+				case 5:
+					prc.memberDelete();
+					break;
+				case -1:
+					System.out.println("\n>> 프로그램이 종료됩니다.");
+					return;
 				default:
+					System.out.println("\n>> 잘못 입력하셨습니다.\n");
 					break;
 			}
 			
